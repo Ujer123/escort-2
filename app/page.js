@@ -1,7 +1,9 @@
+import HomeCard from "@/components/HomeCard";
+
 export default function Home() {
   return (
 <>
-Hello
+<HomeCard />
 </>
   );
 }
