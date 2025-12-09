@@ -22,7 +22,7 @@ export default function HomeCard() {
     };
 
     try {
-      const response = await fetch('/api/profiles');
+      const response = await fetch('/api/services');
       if (response.ok) {
         const data = await response.json();
         setProfiles(data);

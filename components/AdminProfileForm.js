@@ -7,9 +7,9 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
   const [form, setForm] = useState({
     name: '',
     nationality: '',
-    age: '',
-    price: '',
-    phone: '',
+    age: null,
+    price: null,
+    phone: null,
     image: '',
     gallery: ['', '', '', ''],
     description: '',
@@ -56,9 +56,9 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
       setForm({
         name: initialData.name || '',
         nationality: initialData.nationality || '',
-        age: initialData.age || '',
-        price: initialData.price || '',
-        phone: initialData.phone || '',
+        age: initialData.age || null,
+        price: initialData.price || null,
+        phone: initialData.phone || null,
         image: initialData.image || '',
         gallery: initialData.gallery || ['', '', '', ''],
         description: initialData.description || '',
@@ -263,7 +263,7 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
             <input
               type="text"
               name="price"
-              placeholder="Starting Price (e.g., $300)"
+              placeholder="Starting Price (e.g., 300)"
               value={form.price}
               onChange={handleChange}
               className="p-3 bg-black/30 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"

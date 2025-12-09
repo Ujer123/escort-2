@@ -1,7 +1,6 @@
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
-import bcrypt from "bcryptjs";
-import { sendEmail } from "@/lib/email.js";
+import { sendEmail } from "@/lib/email";
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -10,37 +9,28 @@ function generateOTP() {
 export async function POST(req) {
   try {
     await connectDB();
-    const { email, password, role, phone } = await req.json();
+    const { email, type } = await req.json(); // type: 'verification' or 'reset'
 
-    if (!email || !password || !role) {
-      return new Response(JSON.stringify({ error: "Email, password, and role are required" }), { status: 400 });
+    if (!email || !type) {
+      return new Response(JSON.stringify({ error: "Email and type are required" }), { status: 400 });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return new Response(JSON.stringify({ error: "User already exists" }), { status: 400 });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    if (type === 'verification' && user.isVerified) {
+      return new Response(JSON.stringify({ error: "Account already verified" }), { status: 400 });
+    }
 
-    // Create user
-    const user = new User({
-      email,
-      password: hashedPassword,
-      role,
-      phone,
-      isVerified: false, // Will be verified via OTP
-    });
-
-    // Generate OTP for verification
+    // Generate OTP
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+    // Save OTP to user
     user.otp = otp;
     user.otpExpires = otpExpires;
-
     await user.save();
 
     // Send OTP via email
@@ -56,12 +46,12 @@ export async function POST(req) {
     }
 
     return new Response(JSON.stringify({
-      message: "Registration successful! Please verify your account with the OTP sent to your email.",
+      message: "OTP sent successfully",
       expiresIn: "10 minutes"
     }), { status: 200 });
 
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Send OTP error:", error);
     return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
   }
 }

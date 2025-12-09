@@ -1,14 +1,16 @@
 'use client'
 import { useState } from "react";
+import OTPVerification from "./OTPVerification";
 
 export default function RegistrationForm() {
   const [form, setForm] = useState({
-    role: "visitor",
+    role: "escort",
     email: "",
     password: "",
     phone: "",
   });
-  
+
+  const [step, setStep] = useState('register'); // 'register' or 'verify'
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -22,33 +24,33 @@ export default function RegistrationForm() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!form.email) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Invalid email format";
     }
-    
+
     if (!form.password) newErrors.password = "Password is required";
     else if (form.password.length < 6) {
       newErrors.password = "Password must be at least 6 characters";
     }
-    
+
     // Phone validation for specific roles
     if (['escort', 'agency', 'landlord'].includes(form.role)) {
       if (!form.phone) newErrors.phone = "Phone is required for this role";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setLoading(true);
-    
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -59,16 +61,9 @@ export default function RegistrationForm() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Registration successful!");
-        console.log("User created:", data.user);
-        
-        // Reset form
-        setForm({
-          role: "visitor",
-          email: "",
-          password: "",
-          phone: "",
-        });
+        alert("Registration successful! Please verify your account with the OTP sent to your email.");
+        console.log("OTP:", data.otp); // For testing only
+        setStep('verify');
       } else {
         alert(data.error || "Registration failed");
       }
@@ -80,29 +75,53 @@ export default function RegistrationForm() {
     }
   };
 
+  const handleVerificationSuccess = (data) => {
+    alert("Account verified successfully! You can now log in.");
+    // Reset form and go back to register step
+    setForm({
+      role: "escort",
+      email: "",
+      password: "",
+      phone: "",
+    });
+    setStep('register');
+  };
+
+  const handleCancelVerification = () => {
+    setStep('register');
+  };
+
+  if (step === 'verify') {
+    return (
+      <OTPVerification
+        email={form.email}
+        type="verification"
+        onSuccess={handleVerificationSuccess}
+        onCancel={handleCancelVerification}
+      />
+    );
+  }
+
   const roleDisplayNames = {
     escort: "Independent Escort",
-    agency: "Escort Agency", 
-    landlord: "Landlord",
-    visitor: "Visitor",
-    admin: "Administrator"
+    agency: "Escort Agency",
   };
 
   return (
     <div className="min-h-screen bg-purple-50 p-8 flex items-center justify-center">
-      <form 
-    onSubmit={handleSubmit} 
+      <form
+    onSubmit={handleSubmit}
     className="bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl"
   >
     <h2 className="text-3xl font-extrabold text-center mb-8 tracking-wide">Registration</h2>
-        
+
         {/* Role Selection */}
         <div className="space-y-3">
           <label className="block text-sm font-medium">Select Role:</label>
           <div className="grid grid-cols-2 gap-3">
-            {["escort", "agency", "landlord", "visitor", "admin"].map((role) => (
-               <label 
-            key={role} 
+            {["escort", "agency"].map((role) => (
+               <label
+            key={role}
             className={`flex items-center space-x-2 cursor-pointer p-2 rounded border border-transparent hover:border-purple-400 transition-colors ${
               form.role === role ? 'bg-purple-700 border-purple-400' : ''
             }`}
@@ -155,7 +174,7 @@ export default function RegistrationForm() {
         {['escort', 'agency', 'landlord'].includes(form.role) && (
           <div>
             <input
-              className={`w-full p-3 placeholder:text-white text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white ${
+              className={`w-full p-3 placeholder:text-white text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white border-2 border-white ${
                 errors.phone ? 'border-2 border-red-500' : ''
               }`}
               name="phone"
@@ -179,7 +198,7 @@ export default function RegistrationForm() {
 
         {/* Role Info */}
         <div className="text-center text-sm text-purple-200">
-          {form.role === 'visitor' ? 
+          {form.role === 'visitor' ?
             "Visitors only need email and password" :
             "Phone number is required for this role"
           }

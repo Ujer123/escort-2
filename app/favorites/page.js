@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function FavoritesPage() {
   const [favorites, setFavorites] = useState([]);
@@ -37,16 +38,44 @@ export default function FavoritesPage() {
     fetchFavorites();
   }, []);
 
+  const handleRemove = async (serviceId) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const response = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ serviceId }),
+        });
+
+        if (response.ok) {
+          setFavorites(favorites.filter(fav => fav._id !== serviceId));
+        } else {
+          console.error('Failed to remove favorite');
+        }
+      } else {
+        const updatedFavs = favorites.filter(fav => fav._id !== serviceId);
+        localStorage.setItem('favorites', JSON.stringify(updatedFavs));
+        setFavorites(updatedFavs);
+      }
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex justify-center items-center">
+      <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-800 flex justify-center items-center">
         <div className="text-white text-2xl font-semibold animate-pulse">Loading favorites...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 py-12 px-6">
+    <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-800 py-12 px-6">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-white">⭐ Your Favorites</h1>
         <p className="text-gray-400 mt-2">Here are the services you’ve saved</p>
@@ -75,9 +104,16 @@ export default function FavoritesPage() {
 
               <p className="text-gray-300 mt-4 line-clamp-3">{service.description || "No description available."}</p>
 
-              <button className="mt-5 w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg transition">
-                View Details
-              </button>
+              <div className="flex justify-between mt-5">
+                <Link href={`/profile/${service.createdBy}`} className="w-full mr-2">
+                  <button className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 rounded-lg transition">
+                    View Details
+                  </button>
+                </Link>
+                <button onClick={() => handleRemove(service._id)} className="w-full ml-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition">
+                  Remove
+                </button>
+              </div>
             </div>
           ))}
         </div>
