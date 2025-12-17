@@ -1,13 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfiles } from '../../lib/slices/profileSlice';
 import AdminProfileForm from '@/components/AdminProfileForm';
 
-
 export default function DashboardPage() {
+  const dispatch = useDispatch();
+  const { profiles: services, loading } = useSelector((state) => state.profile);
   const [user, setUser] = useState(null);
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const router = useRouter();
 
@@ -36,20 +37,13 @@ export default function DashboardPage() {
         return;
       }
       setUser(userData);
-      
-      // Fetch services
-      return fetch('/api/services');
-    })
-    .then(res => res.json())
-    .then(servicesData => {
-      setServices(servicesData);
-      setLoading(false);
+      dispatch(fetchProfiles());
     })
     .catch(err => {
       console.error('Error:', err);
       router.push('/login');
     });
-  }, [router]);
+  }, [router, dispatch]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

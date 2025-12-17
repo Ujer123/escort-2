@@ -1,8 +1,13 @@
 'use client'
 import { useState } from "react";
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser, setStep, resetAuth } from '../lib/slices/authSlice';
 import OTPVerification from "./OTPVerification";
 
 export default function RegistrationForm() {
+  const dispatch = useDispatch();
+  const { loading, error, step, email } = useSelector((state) => state.auth);
+
   const [form, setForm] = useState({
     role: "escort",
     email: "",
@@ -10,8 +15,6 @@ export default function RegistrationForm() {
     phone: "",
   });
 
-  const [step, setStep] = useState('register'); // 'register' or 'verify'
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -49,29 +52,14 @@ export default function RegistrationForm() {
 
     if (!validateForm()) return;
 
-    setLoading(true);
-
     try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
+      const resultAction = await dispatch(registerUser(form));
+      if (registerUser.fulfilled.match(resultAction)) {
         alert("Registration successful! Please verify your account with the OTP sent to your email.");
-        console.log("OTP:", data.otp); // For testing only
-        setStep('verify');
-      } else {
-        alert(data.error || "Registration failed");
+        console.log("OTP:", resultAction.payload.otp); // For testing only
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("Network error. Please try again.");
-    } finally {
-      setLoading(false);
+      // Error is handled by Redux
     }
   };
 
@@ -84,17 +72,17 @@ export default function RegistrationForm() {
       password: "",
       phone: "",
     });
-    setStep('register');
+    dispatch(resetAuth());
   };
 
   const handleCancelVerification = () => {
-    setStep('register');
+    dispatch(setStep('register'));
   };
 
   if (step === 'verify') {
     return (
       <OTPVerification
-        email={form.email}
+        email={email}
         type="verification"
         onSuccess={handleVerificationSuccess}
         onCancel={handleCancelVerification}
@@ -111,7 +99,7 @@ export default function RegistrationForm() {
     <div className="min-h-screen bg-purple-50 p-8 flex items-center justify-center">
       <form
     onSubmit={handleSubmit}
-    className="bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl"
+    className="bg-linear-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl"
   >
     <h2 className="text-3xl font-extrabold text-center mb-8 tracking-wide">Registration</h2>
 
@@ -186,6 +174,9 @@ export default function RegistrationForm() {
             {errors.phone && <p className="text-red-400 text-sm mt-1">{errors.phone}</p>}
           </div>
         )}
+
+        {/* Error Message */}
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
 
         {/* Submit Button */}
           <button

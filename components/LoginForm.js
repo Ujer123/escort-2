@@ -1,11 +1,14 @@
 'use client'
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../lib/slices/authSlice';
 
 export default function LoginForm() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
   const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
@@ -34,20 +37,9 @@ export default function LoginForm() {
     
     if (!validateForm()) return;
     
-    setLoading(true);
-    
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
+      const resultAction = await dispatch(loginUser(form));
+      if (loginUser.fulfilled.match(resultAction)) {
         alert("Login successful!");
         
         // Trigger a custom event to notify navbar of login
@@ -56,19 +48,15 @@ export default function LoginForm() {
         }
         
         // Redirect based on role to role-based dashboard
-        if (data.role === "admin" || data.role === "agency" || data.role === "escort") {
+        const role = resultAction.payload.role;
+        if (role === "admin" || role === "agency" || role === "escort") {
           router.push("/dashboard/role-based");
         } else {
           router.push("/");
         }
-      } else {
-        alert(data.error || "Login failed");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      alert("Network error. Please try again.");
-    } finally {
-      setLoading(false);
+      // Error is handled by Redux
     }
   };
 

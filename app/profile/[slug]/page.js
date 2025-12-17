@@ -3,6 +3,8 @@ import { useEffect, useState, use } from 'react';
 import { Heart, MessageCircle, Phone, Clock, MapPin, Star, Camera, Home, Calendar, Plane, Utensils, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfile } from '@/lib/slices/profileSlice';
 
 function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -10,20 +12,16 @@ function slugify(text) {
 
 export default function ProfilePage({ params }) {
   const { slug } = use(params);
-  const [profile, setProfile] = useState(null);
+  const dispatch = useDispatch();
+  const { data: profile, loading, error } = useSelector((state) => state.profile);
   const [activeTab, setActiveTab] = useState('about');
   const [selectedImage, setSelectedImage] = useState(0);
 
   useEffect(() => {
     if (slug) {
-      fetch(`/api/services`)
-        .then(res => res.json())
-        .then(data => {
-          const foundProfile = data.find(p => slugify(p.name) === slug);
-          setProfile(foundProfile);
-        });
+      dispatch(fetchProfile(slug));
     }
-  }, [slug]);
+  }, [slug, dispatch]);
 
   if (!profile) {
     return (

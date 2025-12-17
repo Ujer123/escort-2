@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfiles } from '../../lib/slices/profileSlice';
 import dynamic from 'next/dynamic';
 import ProfileManagement from '@/components/ProfileManagement';
 
@@ -11,7 +13,7 @@ const EditorWrapper = dynamic(() => {
     const { CKEditor } = mod;
     return import('@ckeditor/ckeditor5-build-classic').then((editorMod) => {
       const ClassicEditor = editorMod.default;
-      
+
       return function EditorComponent({ data, onChange, config }) {
         return (
           <CKEditor
@@ -35,6 +37,8 @@ const EditorWrapper = dynamic(() => {
 });
 
 export default function AdminDashboard() {
+  const dispatch = useDispatch();
+  const { profiles: services, loading: profilesLoading } = useSelector((state) => state.profile);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users');
@@ -65,7 +69,7 @@ export default function AdminDashboard() {
 
   const fetchUsers = useCallback(async () => {
     if (!isClient) return;
-    
+
     const token = localStorage.getItem('token');
     if (!token) {
       router.push('/login');
@@ -98,8 +102,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isClient) {
       fetchUsers();
+      dispatch(fetchProfiles());
     }
-  }, [isClient, fetchUsers]);
+  }, [isClient, fetchUsers, dispatch]);
 
   const handleBlockUser = async (userId) => {
     if (!isClient) return;

@@ -5,7 +5,7 @@ import User from "@/lib/models/User";
 export async function GET(req, { params }) {
   try {
     await connectDB();
-    const { slug } = params;
+    const { slug } = await params;
     const service = await Service.findOne({ createdBy: slug }).populate('createdBy');
     
     if (!service) {

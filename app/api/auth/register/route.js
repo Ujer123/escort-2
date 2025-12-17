@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
 import bcrypt from "bcryptjs";
-import { sendEmail } from "@/lib/email.js";
+import { sendEmail } from "@/lib/email";
 
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();

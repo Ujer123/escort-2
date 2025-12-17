@@ -1,12 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProfiles } from '../../lib/slices/profileSlice';
 import AdminProfileForm from '@/components/AdminProfileForm';
 
 export default function AgencyDashboard() {
+  const dispatch = useDispatch();
+  const { profiles: services, loading } = useSelector((state) => state.profile);
   const [user, setUser] = useState(null);
-  const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
@@ -29,39 +31,26 @@ export default function AgencyDashboard() {
 
         if (userResponse.ok) {
           const userData = await userResponse.json();
-          
+
           // Verify user is agency
           if (userData.role !== 'agency') {
             router.push('/');
             return;
           }
-          
+
           setUser(userData);
-          
-          // Fetch services with authentication to get filtered results
-          const servicesResponse = await fetch('/api/services', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          
-          if (servicesResponse.ok) {
-            const servicesData = await servicesResponse.json();
-            setServices(servicesData);
-          }
+          dispatch(fetchProfiles());
         } else {
           router.push('/login');
         }
       } catch (error) {
         console.error('Error fetching data:', error);
         router.push('/login');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
-  }, [router]);
+  }, [router, dispatch]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');

@@ -1,68 +1,24 @@
 'use client'
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFavorites, toggleFavorite, toggleFavoriteLocal } from '../../lib/slices/profileSlice';
 
 export default function FavoritesPage() {
-  const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const { favorites, loading, error } = useSelector((state) => state.profile);
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const response = await fetch('/api/favorites', {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+    dispatch(fetchFavorites());
+  }, [dispatch]);
 
-          if (response.ok) {
-            const data = await response.json();
-            setFavorites(data.map(item => item.service));
-          } else {
-            console.error('Failed to fetch favorites');
-          }
-        } else {
-          const savedFavs = JSON.parse(localStorage.getItem('favorites') || '[]');
-          setFavorites(savedFavs);
-        }
-      } catch (error) {
-        console.error('Error fetching favorites:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFavorites();
-  }, []);
-
-  const handleRemove = async (serviceId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (token) {
-        const response = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ serviceId }),
-        });
-
-        if (response.ok) {
-          setFavorites(favorites.filter(fav => fav._id !== serviceId));
-        } else {
-          console.error('Failed to remove favorite');
-        }
-      } else {
-        const updatedFavs = favorites.filter(fav => fav._id !== serviceId);
-        localStorage.setItem('favorites', JSON.stringify(updatedFavs));
-        setFavorites(updatedFavs);
-      }
-    } catch (error) {
-      console.error('Error removing favorite:', error);
+  const handleRemove = (serviceId) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(toggleFavorite({ serviceId }));
+    } else {
+      dispatch(toggleFavoriteLocal(favorites.find(fav => fav._id === serviceId)));
     }
   };
 

@@ -84,7 +84,7 @@ export default function OTPVerification({ email, type, onSuccess, onCancel }) {
 
   return (
     <div className="min-h-screen bg-purple-50 p-8 flex items-center justify-center">
-      <form onSubmit={handleVerify} className="bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl">
+      <form onSubmit={handleVerify} className="bg-linear-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl">
         <h2 className="text-3xl font-extrabold text-center mb-8 tracking-wide">
           {type === 'verification' ? 'Verify Account' : 'Reset Password'}
         </h2>
@@ -133,6 +133,8 @@ export default function OTPVerification({ email, type, onSuccess, onCancel }) {
             {errors.newPassword && <p className="text-red-400 text-sm mt-1">{errors.newPassword}</p>}
           </div>
         )}
+
+
 
         {/* Submit Button */}
         <button
