@@ -14,10 +14,13 @@ export async function GET(req) {
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
+    console.log("Decoded JWT:", decoded); // Debug log
+
     // Only allow admin to view all users
     if (decoded.role !== 'admin') {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { 
+      console.log("User role:", decoded.role, "is not admin"); // Debug log
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       });
