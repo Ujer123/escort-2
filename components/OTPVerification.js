@@ -140,7 +140,7 @@ export default function OTPVerification({ email, type, onSuccess, onCancel }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-purple-700 to-purple-500 hover:from-purple-800 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-md font-semibold transition-all duration-200 shadow-lg"
+          className="w-full bg-linear-to-r from-purple-700 to-purple-500 hover:from-purple-800 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-md font-semibold transition-all duration-200 shadow-lg"
         >
           {loading ? 'Verifying...' : (type === 'verification' ? 'Verify Account' : 'Reset Password')}
         </button>
@@ -153,7 +153,7 @@ export default function OTPVerification({ email, type, onSuccess, onCancel }) {
             disabled={loading}
             className="text-purple-200 hover:text-white underline disabled:opacity-50"
           >
-            Didn't receive code? Resend OTP
+            Didn&apos;t receive code? Resend OTP
           </button>
         </div>
 

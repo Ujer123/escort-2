@@ -20,33 +20,33 @@ export default function LoginForm() {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!form.email) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = "Invalid email format";
     }
-    
+
     if (!form.password) newErrors.password = "Password is required";
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     try {
       const resultAction = await dispatch(loginUser(form));
       if (loginUser.fulfilled.match(resultAction)) {
         alert("Login successful!");
-        
+
         // Trigger a custom event to notify navbar of login
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('authStateChanged'));
         }
-        
+
         // Redirect based on role to role-based dashboard
         const role = resultAction.payload.role;
         if (role === "admin" || role === "agency" || role === "escort") {
@@ -62,12 +62,12 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen bg-purple-50 p-8 flex items-center justify-center">
-      <form 
-    onSubmit={handleSubmit} 
+      <form
+    onSubmit={handleSubmit}
     className="bg-gradient-to-br from-purple-900 via-purple-800 to-purple-900 bg-opacity-90 backdrop-blur-md p-8 rounded-xl text-white space-y-6 w-full max-w-md shadow-2xl"
   >
     <h2 className="text-3xl font-extrabold text-center mb-8 tracking-wide">Login</h2>
-        
+
         <div>
           <input
             className={`w-full p-3 placeholder:text-white text-white rounded-md focus:outline-none focus:ring-2 focus:ring-white border-2 border-white ${

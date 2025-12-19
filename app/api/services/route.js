@@ -31,23 +31,41 @@ export async function GET(req) {
     // Return filtered results based on role
     if (user.role === "admin") {
       // Admin sees all profiles
-      services = await Service.find().populate('createdBy', 'email agencyName');
+      services = await Service.find()
+        .select('-fullDescription -internalNotes -reasonForStatusChange') // Exclude large fields for list view
+        .populate('createdBy', 'email agencyName')
+        .lean();
     } else if (user.role === "agency") {
       // Agency users see only their own profiles
-      services = await Service.find({ createdBy: user.id }).populate('createdBy', 'email agencyName');
+      services = await Service.find({ createdBy: user.id })
+        .select('-fullDescription -internalNotes -reasonForStatusChange')
+        .populate('createdBy', 'email agencyName')
+        .lean();
     } else if (user.role === "escort") {
       // Escort users see only their own profiles
-      services = await Service.find({ createdBy: user.id }).populate('createdBy', 'email agencyName');
+      services = await Service.find({ createdBy: user.id })
+        .select('-fullDescription -internalNotes -reasonForStatusChange')
+        .populate('createdBy', 'email agencyName')
+        .lean();
     } else {
       // Other roles see all public profiles (no filtering)
-      services = await Service.find();
+      services = await Service.find()
+        .select('-fullDescription -internalNotes -reasonForStatusChange')
+        .lean();
     }
   } else {
-    // Public access - show all profiles
-    services = await Service.find();
+    // Public access - show all profiles, exclude internal fields
+    services = await Service.find()
+      .select('-fullDescription -internalNotes -reasonForStatusChange')
+      .lean();
   }
   
-  return new Response(JSON.stringify(services), { status: 200 });
+  return new Response(JSON.stringify(services), {
+    status: 200,
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+    },
+  });
 }
 
 export async function POST(req) {

@@ -10,6 +10,33 @@ function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 }
 
+function isBase64Image(src) {
+  return src && src.startsWith('data:image/');
+}
+
+function ImageComponent({ src, alt, className, width, height, onClick }) {
+  if (isBase64Image(src)) {
+    return (
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        onClick={onClick}
+      />
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      onClick={onClick}
+    />
+  );
+}
+
 export default function ProfilePage({ params }) {
   const { slug } = use(params);
   const dispatch = useDispatch();
@@ -52,12 +79,12 @@ export default function ProfilePage({ params }) {
             <div className="lg:sticky lg:top-6">
               {/* Main Image */}
               <div className="relative mb-3 md:mb-4">
-                <Image
-                  height={384}
-                  width={384}
+                <ImageComponent
                   src={profile.gallery[selectedImage] || profile.image}
                   alt={profile.name}
                   className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-lg"
+                  width={384}
+                  height={384}
                 />
                 <div className="absolute top-2 md:top-4 left-2 md:left-4">
                   <span className="bg-green-500 text-[10px] md:text-xs px-2 py-1 rounded-full">ONLINE</span>
@@ -75,7 +102,7 @@ export default function ProfilePage({ params }) {
               {/* Gallery - Responsive Grid */}
               <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-1.5 md:gap-2 mb-4 md:mb-6">
                 {profile.gallery.map((img, index) => (
-                  <Image 
+                  <ImageComponent
                     key={index}
                     src={img}
                     alt={`Gallery ${index + 1}`}

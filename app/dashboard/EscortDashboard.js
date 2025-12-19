@@ -37,7 +37,7 @@ export default function EscortDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-gray-900 to-black">
+    <div className="min-h-screen bg-linear-to-br from-purple-900 via-gray-900 to-black">
       <DashboardHeader user={user} onLogout={handleLogout} />
 
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
@@ -58,6 +58,7 @@ export default function EscortDashboard() {
           {activeTab === 'profiles' && (
             <ProfilesTab
               services={services}
+              showAddForm={showAddForm}
               onAddProfile={setShowAddForm}
               refreshServices={refreshServices}
             />

@@ -1,10 +1,16 @@
-import React from 'react'
-import RegistrationForm from '@/components/RegistrationForm'
+import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+
+const RegistrationForm = dynamic(() => import('@/components/RegistrationForm'), {
+  suspense: true,
+})
 
 const Register = () => {
   return (
     <div>
-      <RegistrationForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <RegistrationForm />
+      </Suspense>
     </div>
   )
 }

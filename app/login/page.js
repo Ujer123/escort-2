@@ -1,10 +1,16 @@
-import React from 'react'
-import LoginForm from '@/components/LoginForm'
+import React, { Suspense } from 'react'
+import dynamic from 'next/dynamic'
+
+const LoginForm = dynamic(() => import('@/components/LoginForm'), {
+  suspense: true,
+})
 
 const Login = () => {
   return (
     <div>
-      <LoginForm />
+      <Suspense fallback={<div>Loading...</div>}>
+        <LoginForm />
+      </Suspense>
     </div>
   )
 }

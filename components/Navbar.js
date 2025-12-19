@@ -171,7 +171,7 @@ export default function Navbar() {
                   href="/register"
                   className="text-gray-200 hover:text-white transition-colors font-medium"
                 >
-                  REGISTRATION
+                  LISTING
                 </Link>
                 <Link
                   href="/login"
@@ -247,7 +247,7 @@ export default function Navbar() {
                   className="block text-gray-200 hover:text-white transition-colors font-medium py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  REGISTRATION
+                  LISTING
                 </Link>
                 <Link
                   href="/login"
