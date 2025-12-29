@@ -54,13 +54,15 @@ export default function HomeCard() {
     );
   }
 
+  const favoriteIds = new Set(favorites.map(fav => fav._id || fav.phone));
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 justify-center gap-6 py-10 px-10">
       {profiles.map((profile) => (
         <ProfileCard
           key={profile._id || profile.phone}
           data={profile}
-          isFavorite={favorites.some(fav => fav._id === profile._id || fav.phone === profile.phone)}
+          isFavorite={favoriteIds.has(profile._id || profile.phone)}
           onFavoriteToggle={handleToggleFavorite}
         />
       ))}
