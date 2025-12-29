@@ -22,44 +22,54 @@ function verifyAdmin(req) {
 
 export async function GET(req) {
   await connectDB();
-  
+
+  const url = new URL(req.url);
+  const tag = url.searchParams.get('tag');
+
   // Check if request includes auth header for filtered results
   const user = verifyUser(req);
+  let query = {};
+
+  // Add tag filter if provided
+  if (tag) {
+    query.tags = { $in: [tag] };
+  }
+
   let services;
-  
+
   if (user) {
     // Return filtered results based on role
     if (user.role === "admin") {
       // Admin sees all profiles
-      services = await Service.find()
+      services = await Service.find(query)
         .select('-fullDescription -internalNotes -reasonForStatusChange') // Exclude large fields for list view
         .populate('createdBy', 'email agencyName')
         .lean();
     } else if (user.role === "agency") {
       // Agency users see only their own profiles
-      services = await Service.find({ createdBy: user.id })
+      services = await Service.find({ ...query, createdBy: user.id })
         .select('-fullDescription -internalNotes -reasonForStatusChange')
         .populate('createdBy', 'email agencyName')
         .lean();
     } else if (user.role === "escort") {
       // Escort users see only their own profiles
-      services = await Service.find({ createdBy: user.id })
+      services = await Service.find({ ...query, createdBy: user.id })
         .select('-fullDescription -internalNotes -reasonForStatusChange')
         .populate('createdBy', 'email agencyName')
         .lean();
     } else {
       // Other roles see all public profiles (no filtering)
-      services = await Service.find()
+      services = await Service.find(query)
         .select('-fullDescription -internalNotes -reasonForStatusChange')
         .lean();
     }
   } else {
     // Public access - show all profiles, exclude internal fields
-    services = await Service.find()
+    services = await Service.find(query)
       .select('-fullDescription -internalNotes -reasonForStatusChange')
       .lean();
   }
-  
+
   return new Response(JSON.stringify(services), {
     status: 200,
     headers: {

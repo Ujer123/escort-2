@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSEO } from '@/lib/slices/seoSlice';
 import HomeCard from "@/components/HomeCard";
-import Footer from '@/components/Footer';
+
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -39,7 +39,7 @@ export default function Home() {
       {seoData && (
         <div className='px-8 py-10 bg-[#d52882] md:m-10 md:rounded-xl' dangerouslySetInnerHTML={{ __html: seoData.content }} />
       )}
-      <Footer/>
+      
     </>
   );
 }

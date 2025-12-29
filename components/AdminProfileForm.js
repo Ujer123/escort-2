@@ -2,8 +2,13 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Home, Clock, Calendar, Plane, Utensils } from 'lucide-react';
 import ImageUpload from './ImageUpload';
+import { useDispatch } from 'react-redux';
+import { invalidateProfilesCache } from '../lib/slices/profileSlice';
+
 
 export default function AdminProfileForm({ onProfileAdded, initialData }) {
+const [tagInput, setTagInput] = useState('');
+  const dispatch = useDispatch();
   const [form, setForm] = useState({
     name: '',
     nationality: '',
@@ -14,6 +19,7 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
     gallery: ['', '', '', ''],
     description: '',
     fullDescription: '',
+    tags: [],
     services: [
       { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
       { name: 'INCALL', price: '$250', icon: 'Home' },
@@ -63,6 +69,7 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
         gallery: initialData.gallery || ['', '', '', ''],
         description: initialData.description || '',
         fullDescription: initialData.fullDescription || '',
+        tags: initialData.tags || [],
         services: initialData.services || [
           { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
           { name: 'INCALL', price: '$250', icon: 'Home' },
@@ -123,6 +130,17 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
     }));
   };
 
+  const handleTagAdd = (e) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      const newTag = tagInput.trim().toLowerCase().replace(/\s+/g, '-');
+      if (!form.tags.includes(newTag)) {
+        setForm(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+      }
+      setTagInput('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -145,6 +163,9 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
       if (response.ok) {
         const updatedProfile = await response.json();
         alert(`Profile ${isEditing ? 'updated' : 'created'} successfully!`);
+        if (isEditing) {
+          dispatch(invalidateProfilesCache());
+        }
         if (onProfileAdded) onProfileAdded(updatedProfile);
 
         // Reset form only when creating new profile
@@ -294,6 +315,33 @@ export default function AdminProfileForm({ onProfileAdded, initialData }) {
               <option value="Busy">Currently Busy</option>
               <option value="Offline">Offline</option>
             </select>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-purple-300 mb-2">Tags</label>
+              <input
+                type="text"
+                placeholder="Type a tag and press Enter to add"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagAdd}
+                className="w-full p-3 bg-black/30 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+              />
+              {form.tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {form.tags.map(tag => (
+                    <span key={tag} className="bg-purple-500/20 text-purple-300 text-xs px-2 py-1 rounded-full border border-purple-500/30">
+                      {tag.replace('-', ' ')}
+                      <button
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
+                        className="ml-1 text-purple-400 hover:text-purple-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

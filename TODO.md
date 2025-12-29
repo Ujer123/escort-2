@@ -1,31 +1,9 @@
-# Profile Loading Optimization with Redux
+# TODO: Implement Tags as Array in Profiles
 
 ## Tasks
-- [x] Install Redux dependencies (@reduxjs/toolkit, react-redux)
-- [x] Create Redux store and configure in app/layout.js
-- [x] Create profile slice for state management
-- [x] Create dedicated API endpoint for individual profiles (/api/profiles/[slug]/route.js)
-- [x] Update profile page to use Redux and new API
-- [x] Test profile loading performance
-
----
-
-# HomeCard.js Error Fixes
-
-## Issues Fixed
-- [x] 404 error for /profiles.json - Created fallback profiles.json in public directory
-- [x] Improved error handling in HomeCard.js to gracefully handle API failures
-
-## Current Status
-- HomeCard.js now tries API first, falls back to profiles.json on any error
-- Created sample data in public/profiles.json for testing
-- API still returns 500 error due to MongoDB connection issues
-
-## Remaining Issues
-- [ ] MongoDB database connection - Need to setup local MongoDB or use MongoDB Atlas
-- [ ] Test API endpoints after database is connected
-
-## Recommendations
-- For development: Use MongoDB Atlas (free cloud database) instead of local MongoDB
-- Update MONGODB_URI in .env.local to point to Atlas connection string
-- Or install MongoDB locally and ensure it's running on port 27017
+- [x] Update lib/models/Service.js to add tags: [String] field
+- [x] Update components/AdminProfileForm.js to include tags field in form state, UI, and submission
+- [x] Update components/Footer.js to change footerLinks href to /tags/[tag] and add tags display section
+- [x] Create app/tags/[tag]/page.js for tags page showing profiles with that tag
+- [x] Update app/api/services/route.js to support filtering by tags in GET request
+- [x] Test the implementation
