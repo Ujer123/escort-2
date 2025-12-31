@@ -180,6 +180,7 @@ const [tagInput, setTagInput] = useState('');
             gallery: ['', '', '', ''],
             description: '',
             fullDescription: '',
+            tags: [],
             services: [
               { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
               { name: 'INCALL', price: '$250', icon: 'Home' },

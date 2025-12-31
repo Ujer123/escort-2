@@ -90,8 +90,11 @@ export async function POST(req) {
   // Get user details for agency name
   const userData = await User.findById(user.id);
   
+  const { tags, ...rest } = body;
+  
   const service = new Service({
-    ...body,
+    ...rest,
+    tags: tags || [],
     createdBy: user.id,
     creatorRole: user.role,
     agencyName: userData.agencyName || userData.email // Use agency name or email as fallback
@@ -121,7 +124,15 @@ export async function PUT(req) {
     return new Response(JSON.stringify({ error: "Forbidden - You can only edit your own profiles" }), { status: 403 });
   }
   
-  const updated = await Service.findByIdAndUpdate(body.id, body, { new: true });
+  const { id, tags, ...rest } = body;
+  const updateData = { ...rest };
+
+  // Only update tags if they are explicitly provided in the request
+  if (Array.isArray(tags)) {
+    updateData.tags = tags;
+  }
+  
+  const updated = await Service.findByIdAndUpdate(id, updateData, { new: true });
   return new Response(JSON.stringify(updated), { status: 200 });
 }
 
