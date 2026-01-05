@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db";
 import Service from "@/lib/models/Service";
+import User from "@/lib/models/User";
 import ProfileCard from "@/components/ProfileCard";
 import Link from "next/link";
 
@@ -45,7 +46,7 @@ export default async function TagPage({ params }) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a0f27] to-[#2d1b3d] text-white flex items-center justify-center">
+      <div className="text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#bb86fc] mb-4">Error</h1>
           <p className="text-[#e0e0e0]">Failed to load profiles. Please try again later.</p>
@@ -61,8 +62,8 @@ export default async function TagPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a0f27] to-[#2d1b3d] text-white">
-      <div className="container mx-auto px-4 py-8">
+    <div className="text-white">
+      <div className="mx-auto px-2 sm:px-10 mb-8 sm:mb-0">
         <div className="mb-8">
           <Link
             href="/"
@@ -71,7 +72,7 @@ export default async function TagPage({ params }) {
             ← Back to Home
           </Link>
           <h1 className="text-3xl font-bold text-[#bb86fc] mb-2">
-            Profiles tagged with "{tag}"
+            Profiles tagged with &apos;{tag}&apos;
           </h1>
           <p className="text-[#e0e0e0]">
             Found {services.length} profile{services.length !== 1 ? 's' : ''} with this tag
@@ -81,7 +82,7 @@ export default async function TagPage({ params }) {
         {services.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-[#999999] text-lg">
-              No profiles found with the tag "{tag}"
+              No profiles found with the tag &apos;{tag}&apos;
             </p>
             <Link
               href="/"

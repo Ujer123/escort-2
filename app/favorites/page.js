@@ -7,7 +7,7 @@ import { fetchFavorites, toggleFavorite, toggleFavoriteLocal } from '../../lib/s
 import { useHydrated } from '../../lib/hooks/useHydrated';
 
 const FavoriteCard = memo(({ service, onRemove }) => (
-  <div className="bg-gray-800/60 backdrop-blur-lg border border-gray-700 rounded-xl p-6 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 hover:scale-[1.02]">
+  <div className="bg-linear-to-b from-gray-900 to-gray-800 backdrop-blur-lg border border-gray-700 rounded-xl p-6 shadow-lg hover:shadow-2xl transition transform hover:-translate-y-2 hover:scale-[1.02]">
     <div className="flex items-center space-x-4">
       <Image
         src={service.image || '/default-avatar.png'}
@@ -60,7 +60,7 @@ export default function FavoritesPage() {
 
   if (!isHydrated) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-800 flex justify-center items-center">
+      <div className="flex justify-center items-center">
         <div className="text-white text-2xl font-semibold animate-pulse">Loading favorites...</div>
       </div>
     );
@@ -68,14 +68,14 @@ export default function FavoritesPage() {
 
   if (favoritesLoading) {
     return (
-      <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-800 flex justify-center items-center">
+      <div className="flex justify-center items-center">
         <div className="text-white text-2xl font-semibold animate-pulse">Loading favorites...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-800 py-12 px-6">
+    <div className=" px-10">
       <div className="text-center mb-10">
         <h1 className="text-4xl font-bold text-white">⭐ Your Favorites</h1>
         <p className="text-gray-400 mt-2">Here are the services you’ve saved</p>

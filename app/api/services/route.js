@@ -25,6 +25,9 @@ export async function GET(req) {
 
   const url = new URL(req.url);
   const tag = url.searchParams.get('tag');
+  const page = parseInt(url.searchParams.get('page')) || 1;
+  const limit = parseInt(url.searchParams.get('limit')) || 20; // Default 20 profiles per page
+  const skip = (page - 1) * limit;
 
   // Check if request includes auth header for filtered results
   const user = verifyUser(req);
@@ -36,41 +39,59 @@ export async function GET(req) {
   }
 
   let services;
+  let totalCount;
 
   if (user) {
-    // Return filtered results based on role
+    // Return filtered results based on role with pagination
+    let baseQuery;
     if (user.role === "admin") {
       // Admin sees all profiles
-      services = await Service.find(query)
-        .select('-fullDescription -internalNotes -reasonForStatusChange') // Exclude large fields for list view
-        .populate('createdBy', 'email agencyName')
-        .lean();
+      baseQuery = Service.find(query);
     } else if (user.role === "agency") {
       // Agency users see only their own profiles
-      services = await Service.find({ ...query, createdBy: user.id })
-        .select('-fullDescription -internalNotes -reasonForStatusChange')
-        .populate('createdBy', 'email agencyName')
-        .lean();
+      baseQuery = Service.find({ ...query, createdBy: user.id });
     } else if (user.role === "escort") {
       // Escort users see only their own profiles
-      services = await Service.find({ ...query, createdBy: user.id })
-        .select('-fullDescription -internalNotes -reasonForStatusChange')
-        .populate('createdBy', 'email agencyName')
-        .lean();
+      baseQuery = Service.find({ ...query, createdBy: user.id });
     } else {
       // Other roles see all public profiles (no filtering)
-      services = await Service.find(query)
-        .select('-fullDescription -internalNotes -reasonForStatusChange')
-        .lean();
+      baseQuery = Service.find(query);
     }
+
+    // Get total count for pagination
+    totalCount = await Service.countDocuments(baseQuery.getQuery());
+
+    // Apply pagination and populate
+    services = await baseQuery
+      .select('-fullDescription -internalNotes -reasonForStatusChange') // Exclude large fields for list view
+      .populate('createdBy', 'email agencyName')
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(limit)
+      .lean();
   } else {
-    // Public access - show all profiles, exclude internal fields
+    // Public access - show all profiles with pagination, exclude internal fields
+    totalCount = await Service.countDocuments(query);
+
     services = await Service.find(query)
       .select('-fullDescription -internalNotes -reasonForStatusChange')
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(limit)
       .lean();
   }
 
-  return new Response(JSON.stringify(services), {
+  return new Response(JSON.stringify({
+    services,
+    pagination: {
+      page,
+      limit,
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      hasNext: page * limit < totalCount,
+      hasPrev: page > 1
+    }
+  }), {
     status: 200,
     headers: {
       'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',

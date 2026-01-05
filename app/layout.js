@@ -27,8 +27,10 @@ export default function RootLayout({ children }) {
       >
         <ClientLayout>
           <Navbar />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:mt-20 mt-10 min-h-screen">
           {children}
           <Footer/>
+          </div>
         </ClientLayout>
       </body>
     </html>

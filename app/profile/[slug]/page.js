@@ -17,7 +17,9 @@ function isBase64Image(src) {
 function ImageComponent({ src, alt, className, width, height, onClick }) {
   if (isBase64Image(src)) {
     return (
-      <img
+      <Image
+      width={150}
+      height={150}
         src={src}
         alt={alt}
         className={className}
@@ -52,14 +54,14 @@ export default function ProfilePage({ params }) {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gray-900 flex justify-center items-center">
+      <div className=" flex justify-center items-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className=" text-white">
       {/* Header */}
       <div className="bg-black/50 p-3 md:p-4">
         <div className="container mx-auto max-w-6xl">
