@@ -46,7 +46,9 @@ export default function ProfileManagement() {
     })
     .then(res => res.json())
     .then(servicesData => {
-      setServices(servicesData);
+      // Handle both paginated response format and direct array format
+      const servicesArray = servicesData.services || servicesData;
+      setServices(Array.isArray(servicesArray) ? servicesArray : []);
       setLoading(false);
     })
     .catch(err => {
@@ -60,7 +62,9 @@ export default function ProfileManagement() {
       const response = await fetch('/api/services');
       if (response.ok) {
         const data = await response.json();
-        setServices(data);
+        // Handle both paginated response format and direct array format
+        const servicesArray = data.services || data;
+        setServices(Array.isArray(servicesArray) ? servicesArray : []);
       }
     } catch (error) {
       console.error('Error fetching services:', error);

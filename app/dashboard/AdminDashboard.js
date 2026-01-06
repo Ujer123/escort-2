@@ -209,7 +209,7 @@ export default function AdminDashboard() {
 
   if (!isClient || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-black flex items-center justify-center px-4">
+      <div className="min-h-screen bg-linear-to-br from-blue-900 via-gray-900 to-black flex items-center justify-center px-4">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
           <p className="text-blue-300 text-base sm:text-lg font-medium text-center">Loading Admin Dashboard...</p>
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-black">
+    <div className="min-h-screen bg-linear-to-br from-blue-900 via-gray-900 to-black">
       {/* Header */}
       <div className="bg-black/30 backdrop-blur-sm border-b border-blue-500/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
                     router.push('/login');
                   }
                 }}
-                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-3 py-2 sm:px-6 sm:py-2 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-red-500/25 text-sm sm:text-base whitespace-nowrap"
+                className="bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-3 py-2 sm:px-6 sm:py-2 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-red-500/25 text-sm sm:text-base whitespace-nowrap"
               >
                 <span className="hidden sm:inline">Sign Out</span>
                 <span className="sm:hidden">🚪</span>
@@ -257,7 +257,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Tab Navigation */}
-        <div className="bg-gradient-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-blue-500/20 rounded-none sm:rounded-2xl shadow-2xl mb-4 sm:mb-8">
+        <div className="bg-linear-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-blue-500/20 rounded-none sm:rounded-2xl shadow-2xl mb-4 sm:mb-8">
           <div className="border-b border-blue-500/20">
             {/* Mobile Menu Button */}
             <button
@@ -284,7 +284,7 @@ export default function AdminDashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex-1 py-3 lg:py-4 px-3 lg:px-6 rounded-xl font-medium text-sm flex items-center justify-center space-x-2 transition-all duration-200 mx-1 ${
                     activeTab === tab.id
-                      ? `bg-gradient-to-r ${tab.color} text-white shadow-lg scale-105`
+                      ? `bg-linear-to-r ${tab.color} text-white shadow-lg scale-105`
                       : 'text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -311,7 +311,7 @@ export default function AdminDashboard() {
                     }}
                     className={`w-full py-3 px-4 font-medium text-sm flex items-center space-x-3 transition-all duration-200 border-b border-blue-500/10 last:border-b-0 ${
                       activeTab === tab.id
-                        ? `bg-gradient-to-r ${tab.color} text-white`
+                        ? `bg-linear-to-r ${tab.color} text-white`
                         : 'text-gray-400 hover:text-white hover:bg-white/5'
                     }`}
                   >

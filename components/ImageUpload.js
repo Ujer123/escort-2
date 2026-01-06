@@ -1,11 +1,15 @@
 'use client'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function ImageUpload({ onImageUpload, currentImage, label = "Upload Image", multiple = false }) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedImages, setUploadedImages] = useState(currentImage ? (Array.isArray(currentImage) ? currentImage : [currentImage]) : []);
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setUploadedImages(currentImage ? (Array.isArray(currentImage) ? currentImage : [currentImage]) : []);
+  }, [currentImage]);
 
   const handleDragOver = (e) => {
     e.preventDefault();

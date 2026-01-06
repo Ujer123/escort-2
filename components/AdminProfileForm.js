@@ -4,6 +4,7 @@ import { MapPin, Home, Clock, Calendar, Plane, Utensils } from 'lucide-react';
 import ImageUpload from './ImageUpload';
 import { useDispatch } from 'react-redux';
 import { invalidateProfilesCache } from '../lib/slices/profileSlice';
+import { slugify } from '../lib/utils';
 
 
 export default function AdminProfileForm({ onProfileAdded, initialData }) {
@@ -149,7 +150,10 @@ const [tagInput, setTagInput] = useState('');
       const token = localStorage.getItem('token');
       const isEditing = !!initialData;
       const method = isEditing ? 'PUT' : 'POST';
-      const requestBody = isEditing ? { ...form, id: initialData._id } : form;
+      
+      // Generate slug if not present (for new profiles) or preserve existing one
+      const slug = initialData?.slug || slugify(form.name);
+      const requestBody = isEditing ? { ...form, id: initialData._id, slug } : { ...form, slug };
 
       const response = await fetch('/api/services', {
         method,
