@@ -2,10 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProfiles } from '../../lib/slices/profileSlice';
 import dynamic from 'next/dynamic';
-import ProfileManagement from '@/components/ProfileManagement';
 
 // Create a wrapper component for CKEditor
 const EditorWrapper = dynamic(() => {
@@ -36,9 +33,19 @@ const EditorWrapper = dynamic(() => {
   )
 });
 
+const ProfileManagement = dynamic(() => import('@/components/ProfileManagement'), {
+  loading: () => (
+    <div className="min-h-[400px] flex items-center justify-center">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
+        <p className="text-blue-300">Loading Profile Management...</p>
+      </div>
+    </div>
+  ),
+  ssr: false
+});
+
 export default function AdminDashboard() {
-  const dispatch = useDispatch();
-  const { profiles: services, loading: profilesLoading } = useSelector((state) => state.profile);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users');
@@ -102,9 +109,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (isClient) {
       fetchUsers();
-      dispatch(fetchProfiles());
     }
-  }, [isClient, fetchUsers, dispatch]);
+  }, [isClient, fetchUsers]);
 
   const handleBlockUser = async (userId) => {
     if (!isClient) return;
@@ -219,9 +225,9 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-900 via-gray-900 to-black">
+    <div>
       {/* Header */}
-      <div className="bg-black/30 backdrop-blur-sm border-b border-blue-500/20 sticky top-0 z-50">
+      {/* <div className="bg-black/30 backdrop-blur-sm border-b border-blue-500/20 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4 sm:py-6">
             <div className="flex items-center space-x-2 sm:space-x-4">
@@ -253,11 +259,11 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8 bg-[#1e2a3a]">
         {/* Tab Navigation */}
-        <div className="bg-linear-to-r from-gray-900/50 to-black/50 backdrop-blur-sm border border-blue-500/20 rounded-none sm:rounded-2xl shadow-2xl mb-4 sm:mb-8">
+        <div className="bg-linear-to-br from-blue-900 via-gray-900 to-black backdrop-blur-sm border border-blue-500/20 rounded-none sm:rounded-2xl shadow-2xl mb-4 sm:mb-8">
           <div className="border-b border-blue-500/20">
             {/* Mobile Menu Button */}
             <button
@@ -597,9 +603,9 @@ export default function AdminDashboard() {
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                      <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 items-center">
                         <span className="mr-2">✏️</span>
-                        SEO Content
+                        Footer
                       </label>
                       <div className="bg-black/20 border border-green-500/20 rounded-xl overflow-hidden">
                         <EditorWrapper

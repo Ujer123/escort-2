@@ -63,7 +63,7 @@ export default function ProfilePage({ params }) {
   return (
     <div className=" text-white">
       {/* Header */}
-      <div className="bg-black/50 p-3 md:p-4">
+      <div>
         <div className="container mx-auto max-w-6xl">
           <Link className="flex items-center gap-2 md:gap-4" href="/">
             <div className="w-7 h-7 md:w-8 md:h-8 bg-pink-500 rounded flex items-center justify-center">
