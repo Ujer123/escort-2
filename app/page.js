@@ -1,63 +1,46 @@
-'use client';
-
-import { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchSEO } from '@/lib/slices/seoSlice';
 import HomeCard from "@/components/HomeCard";
 
+// Force dynamic rendering to ensure fresh data on every request
+export const dynamic = 'force-dynamic';
 
-export default function Home() {
-  const dispatch = useDispatch();
-  const { seoData, loading, error } = useSelector((state) => state.seo);
-  const fetchedRef = useRef(false);
-  const [mounted, setMounted] = useState(false);
+async function fetchSEOData(page) {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/seo?page=${page}`, {
+      cache: 'no-store', // Don't cache SEO data to ensure freshness
+    });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    // Only fetch once, even with strict mode
-    if (mounted && !fetchedRef.current) {
-      fetchedRef.current = true;
-      dispatch(fetchSEO('homepage'));
+    if (!response.ok) {
+      console.warn('Failed to fetch SEO data:', response.status);
+      return null;
     }
-  }, [mounted, dispatch]);
 
-  // Show skeleton while SEO is loading, but render HomeCard immediately
-  if (!mounted) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+    return await response.json();
+  } catch (error) {
+    console.warn('Error fetching SEO data:', error);
+    return null;
+  }
+}
+
+export default async function Home() {
+  // Fetch SEO data on the server
+  const seoData = await fetchSEOData('homepage');
 
   return (
     <>
-      {/* Render SEO header immediately with loading state */}
-      {loading ? (
-        <div className="px-8 py-10 bg-[#d52882] md:mx-10 md:mt-10 md:rounded-xl">
-          <div className="animate-pulse">
-            <div className="h-6 bg-gray-300 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-          </div>
-        </div>
-      ) : seoData ? (
-        <div className="px-8 py-10 bg-[#d52882] md:mx-10 md:mt-10 md:rounded-xl">
+      {/* Render SEO header */}
+      {seoData ? (
+        <div className="px-8 py-10 bg-[#33182c] md:mx-10 md:mt-10 md:rounded-xl">
           <h1 className='text-lg font-bold'>{seoData.h1}</h1>
           <p>{seoData.description}</p>
         </div>
       ) : null}
 
-      {/* Render HomeCard immediately - it handles its own loading state */}
+      {/* Render HomeCard with server-side data fetching */}
       <HomeCard />
 
-      {/* Render SEO footer immediately with loading state */}
-      {loading ? (
-        <div className='px-8 py-10 bg-[#d52882] md:m-10 md:rounded-xl'>
-          <div className="animate-pulse">
-            <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
-            <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-          </div>
-        </div>
-      ) : seoData ? (
-        <div className='px-8 py-10 bg-[#d52882] md:m-10 md:rounded-xl' dangerouslySetInnerHTML={{ __html: seoData.content }} />
+      {/* Render SEO footer */}
+      {seoData ? (
+        <div className='px-8 py-10 bg-[#33182c] md:m-10 md:rounded-xl' dangerouslySetInnerHTML={{ __html: seoData.content }} />
       ) : null}
     </>
   );

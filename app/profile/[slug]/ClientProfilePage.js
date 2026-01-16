@@ -23,6 +23,7 @@ function isBase64Image(src) {
 }
 
 function ImageComponent({ src, alt, className, width, height, onClick, priority }) {
+  if (!src) return null; // Do not render if src is empty or null
   if (isBase64Image(src)) {
     return (
       <Image
@@ -77,8 +78,8 @@ export default function ClientProfilePage({ profile }) {
               {/* Main Image */}
               <div className="relative mb-3 md:mb-4">
                 <ImageComponent
-                  src={profile.gallery?.[selectedImage] || profile.image}
-                  alt={profile.name}
+                  src={profile?.gallery?.[selectedImage] || profile?.image}
+                  alt={profile?.name || 'Profile'}
                   className="w-full h-64 sm:h-80 md:h-96 object-cover rounded-lg"
                   width={400}
                   height={400}
@@ -102,7 +103,7 @@ export default function ClientProfilePage({ profile }) {
               </div>
 
               {/* Gallery - Responsive Grid */}
-              {profile.gallery && profile.gallery.length > 0 && (
+              {profile?.gallery && profile.gallery.length > 0 && (
                 <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 gap-1.5 md:gap-2 mb-4 md:mb-6">
                   {profile.gallery.map((img, index) => (
                     <ImageComponent
@@ -133,7 +134,7 @@ export default function ClientProfilePage({ profile }) {
                       <span className="sm:hidden">Message</span>
                     </button>
                   </a>
-                  <a href={`tel:${profile.phone}`} className="w-full">
+                  <a href={`tel:${profile?.phone || ''}`} className="w-full">
                     <button className="w-full bg-green-600 hover:bg-green-700 py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 text-sm md:text-base transition-colors">
                       <Suspense fallback={<div className="w-4 h-4" />}>
                         <Phone className="w-4 h-4" />
@@ -152,13 +153,13 @@ export default function ClientProfilePage({ profile }) {
             {/* Profile Header */}
             <div className="mb-4 md:mb-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
-                <h1 className="text-2xl md:text-3xl font-bold">{profile.name}</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">{profile?.name || 'Profile'}</h1>
                 <div className="sm:text-right">
-                  <div className="text-xl md:text-2xl font-bold text-pink-500">{profile.price}</div>
+                  <div className="text-xl md:text-2xl font-bold text-pink-500">{profile?.price || 'N/A'}</div>
                   <div className="text-xs md:text-sm text-gray-400">per hour</div>
                 </div>
               </div>
-              <p className="text-sm md:text-base text-gray-300 mb-1">{profile.nationality}</p>
+              <p className="text-sm md:text-base text-gray-300 mb-1">{profile?.nationality || 'Not specified'}</p>
               <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-gray-400">
                 <span className="flex items-center gap-1">
                   <Suspense fallback={<div className="w-3 h-3 md:w-4 md:h-4" />}>
@@ -166,8 +167,8 @@ export default function ClientProfilePage({ profile }) {
                   </Suspense>
                   4.9 (127)
                 </span>
-                <span>Age {profile.age}</span>
-                <span className="text-green-400">{profile.availability}</span>
+                <span>Age {profile?.age || 'N/A'}</span>
+                <span className="text-green-400">{profile?.availability || 'Available'}</span>
               </div>
             </div>
 
@@ -220,7 +221,7 @@ export default function ClientProfilePage({ profile }) {
                         <div key={index} className="bg-gray-800 p-3 md:p-4 rounded-lg flex justify-between items-center">
                           <div className="flex items-center gap-2 md:gap-3">
                             <Suspense fallback={<div className="w-4 h-4 md:w-5 md:h-5" />}>
-                              <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-pink-500 flex-shrink-0" />
+                              <IconComponent className="w-4 h-4 md:w-5 md:h-5 text-pink-500 shrink-0" />
                             </Suspense>
                             <span className="text-sm md:text-base">{service.name}</span>
                           </div>
@@ -273,7 +274,7 @@ export default function ClientProfilePage({ profile }) {
             </div>
 
             {/* Contact Section */}
-            <div className="mt-6 md:mt-8 bg-gradient-to-r from-purple-600 to-pink-600 p-4 md:p-6 rounded-lg">
+            <div className="mt-6 md:mt-8 bg-linear-to-r from-purple-600 to-pink-600 p-4 md:p-6 rounded-lg">
               <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Ready to Book?</h3>
               <div className="flex flex-col sm:flex-row gap-2 md:gap-4">
                 <a href={`mailto:${profile.createdBy?.email || ''}`} className="flex-1">
@@ -281,9 +282,9 @@ export default function ClientProfilePage({ profile }) {
                     Send Message
                   </button>
                 </a>
-                <a href={`tel:${profile.phone}`} className="flex-1">
+                <a href={`tel:${profile?.phone || ''}`} className="flex-1">
                   <button className="w-full bg-black/20 border border-white/30 py-2.5 md:py-3 px-4 md:px-6 rounded-lg hover:bg-black/30 transition-colors text-sm md:text-base">
-                    Call {profile.phone}
+                    Call {profile?.phone || 'N/A'}
                   </button>
                 </a>
               </div>

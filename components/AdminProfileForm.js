@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react';
-import { MapPin, Home, Clock, Calendar, Plane, Utensils } from 'lucide-react';
 import ImageUpload from './ImageUpload';
 import { useDispatch } from 'react-redux';
 import { invalidateProfilesCache } from '../lib/slices/profileSlice';
@@ -9,6 +8,7 @@ import { slugify } from '../lib/utils';
 
 export default function AdminProfileForm({ onProfileAdded, initialData }) {
 const [tagInput, setTagInput] = useState('');
+const [serviceInput, setServiceInput] = useState('');
   const dispatch = useDispatch();
   const [form, setForm] = useState({
     name: '',
@@ -21,14 +21,7 @@ const [tagInput, setTagInput] = useState('');
     description: '',
     fullDescription: '',
     tags: [],
-    services: [
-      { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
-      { name: 'INCALL', price: '$250', icon: 'Home' },
-      { name: 'Overnight', price: '$800', icon: 'Clock' },
-      { name: 'Weekend', price: '$1500', icon: 'Calendar' },
-      { name: 'Travel', price: 'Ask', icon: 'Plane' },
-      { name: 'Dinner Date', price: '$400', icon: 'Utensils' }
-    ],
+    services: [],
     stats: {
       height: '',
       weight: '',
@@ -71,14 +64,7 @@ const [tagInput, setTagInput] = useState('');
         description: initialData.description || '',
         fullDescription: initialData.fullDescription || '',
         tags: initialData.tags || [],
-        services: initialData.services || [
-          { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
-          { name: 'INCALL', price: '$250', icon: 'Home' },
-          { name: 'Overnight', price: '$800', icon: 'Clock' },
-          { name: 'Weekend', price: '$1500', icon: 'Calendar' },
-          { name: 'Travel', price: 'Ask', icon: 'Plane' },
-          { name: 'Dinner Date', price: '$400', icon: 'Utensils' }
-        ],
+        services: initialData.services || [],
         stats: initialData.stats || {
           height: '',
           weight: '',
@@ -118,11 +104,7 @@ const [tagInput, setTagInput] = useState('');
     setForm(prev => ({ ...prev, gallery: newGallery }));
   };
 
-  const handleServiceChange = (index, field, value) => {
-    const newServices = [...form.services];
-    newServices[index][field] = value;
-    setForm(prev => ({ ...prev, services: newServices }));
-  };
+
 
   const handleStatsChange = (field, value) => {
     setForm(prev => ({
@@ -142,6 +124,17 @@ const [tagInput, setTagInput] = useState('');
     }
   };
 
+  const handleServiceAdd = (e) => {
+    if (e.key === 'Enter' && serviceInput.trim()) {
+      e.preventDefault();
+      const newService = serviceInput.trim();
+      if (!form.services.includes(newService)) {
+        setForm(prev => ({ ...prev, services: [...prev.services, newService] }));
+      }
+      setServiceInput('');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -150,7 +143,7 @@ const [tagInput, setTagInput] = useState('');
       const token = localStorage.getItem('token');
       const isEditing = !!initialData;
       const method = isEditing ? 'PUT' : 'POST';
-      
+
       // Generate slug if not present (for new profiles) or preserve existing one
       const slug = initialData?.slug || slugify(form.name);
       const requestBody = isEditing ? { ...form, id: initialData._id, slug } : { ...form, slug };
@@ -185,14 +178,7 @@ const [tagInput, setTagInput] = useState('');
             description: '',
             fullDescription: '',
             tags: [],
-            services: [
-              { name: 'OUTCALL', price: '$300', icon: 'MapPin' },
-              { name: 'INCALL', price: '$250', icon: 'Home' },
-              { name: 'Overnight', price: '$800', icon: 'Clock' },
-              { name: 'Weekend', price: '$1500', icon: 'Calendar' },
-              { name: 'Travel', price: 'Ask', icon: 'Plane' },
-              { name: 'Dinner Date', price: '$400', icon: 'Utensils' }
-            ],
+            services: [],
             stats: {
               height: '',
               weight: '',
@@ -230,9 +216,9 @@ const [tagInput, setTagInput] = useState('');
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-800/20 to-pink-800/20 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-8 shadow-xl">
+    <div className="bg-linear-to-br from-purple-800/20 to-pink-800/20 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-8 shadow-xl">
       <div className="flex items-center space-x-3 mb-6">
-        <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+        <div className="w-10 h-10 bg-linear-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
           <span className="text-white text-lg">{initialData ? '✏️' : '✨'}</span>
         </div>
         <h3 className="text-2xl font-bold text-white">{initialData ? 'Edit Profile' : 'Create New Profile'}</h3>
@@ -339,6 +325,33 @@ const [tagInput, setTagInput] = useState('');
                         type="button"
                         onClick={() => setForm(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tag) }))}
                         className="ml-1 text-purple-400 hover:text-purple-200"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-purple-300 mb-2">Services</label>
+              <input
+                type="text"
+                placeholder="Type a service and press Enter to add"
+                value={serviceInput}
+                onChange={(e) => setServiceInput(e.target.value)}
+                onKeyDown={handleServiceAdd}
+                className="w-full p-3 bg-black/30 border border-purple-500/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+              />
+              {form.services.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {form.services.map(service => (
+                    <span key={service} className="bg-green-500/20 text-green-300 text-xs px-2 py-1 rounded-full border border-green-500/30">
+                      {service}
+                      <button
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, services: prev.services.filter(s => s !== service) }))}
+                        className="ml-1 text-green-400 hover:text-green-200"
                       >
                         ×
                       </button>
@@ -532,7 +545,7 @@ const [tagInput, setTagInput] = useState('');
           <button
             type="submit"
             disabled={loading}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-purple-500/25 flex items-center space-x-2"
+            className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-purple-500/25 flex items-center space-x-2"
           >
             {loading ? (
               <>

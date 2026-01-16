@@ -53,7 +53,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-linear-to-br from-[#2d1b3d] to-[#1a0f27] rounded-xl px-8 py-10 md:m-10">
+    <footer className="bg-[#33182c] rounded-xl px-8 py-10 md:m-10">
       {/* Administration Section */}
       <div className="mb-8">
         <p className="text-[#bb86fc] text-base font-medium">

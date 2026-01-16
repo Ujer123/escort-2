@@ -117,7 +117,7 @@ export default function Navbar() {
   const dashboardLink = getDashboardLink();
 
   return (
-    <header className="bg-linear-to-r from-purple-900 via-purple-800 to-purple-900 text-white shadow-lg">
+    <header className="bg-[#33182c] text-white shadow-lg">
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-3 py-2">
         <div className="flex items-center justify-between h-16 w-full">
           <div className="flex items-center space-x-2">

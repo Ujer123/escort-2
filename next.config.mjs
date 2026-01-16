@@ -16,7 +16,7 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
   /* config options here */
-  reactCompiler: true,
+  // reactCompiler: true, // Temporarily disabled to fix source map error
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
