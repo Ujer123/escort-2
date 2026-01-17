@@ -243,7 +243,7 @@ export default function ProfileManagement() {
                     <tr key={service._id} className="hover:bg-gray-700 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="h-12 w-12 rounded-full bg-gray-600 flex items-center justify-center mr-4 flex-shrink-0">
+                          <div className="h-12 w-12 rounded-full bg-gray-600 flex items-center justify-center mr-4 shrink-0">
                             {service.image ? (
                               <Image
                                 width={48}
@@ -331,7 +331,7 @@ export default function ProfileManagement() {
                   <div key={service._id} className="p-4 sm:p-6 hover:bg-gray-700 transition-colors">
                     {/* Profile Header */}
                     <div className="flex items-start space-x-3 sm:space-x-4 mb-4">
-                      <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gray-600 flex items-center justify-center flex-shrink-0">
+                      <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gray-600 flex items-center justify-center shrink-0">
                         {service.image ? (
                           <Image
                             width={64}

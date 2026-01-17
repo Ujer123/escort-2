@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import ProfileCard from './ProfileCard';
 import { ProfileCardSkeleton } from './ProfileCardSkeleton';
-import { fetchProfiles, fetchFavorites, toggleFavorite, toggleFavoriteLocal } from '../lib/slices/profileSlice';
+import { fetchProfiles, fetchFavorites, toggleFavorite, toggleFavoriteLocal, setInitialProfiles } from '../lib/slices/profileSlice';
 
 export default function ClientHomeCard({ initialProfiles, initialPagination }) {
   const dispatch = useDispatch();
@@ -19,6 +19,10 @@ export default function ClientHomeCard({ initialProfiles, initialPagination }) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    dispatch(setInitialProfiles({ profiles: initialProfiles, pagination: initialPagination }));
+  }, [dispatch, initialProfiles, initialPagination]);
 
   useEffect(() => {
     // Load favorites and sync with server state after hydration

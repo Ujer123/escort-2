@@ -21,6 +21,54 @@ async function fetchSEOData(page) {
   }
 }
 
+export async function generateMetadata() {
+  const seoData = await fetchSEOData('homepage');
+
+  if (seoData) {
+    const metadata = {
+      title: seoData.seotitle || 'Default Title',
+      description: seoData.seodescription || 'Default Description',
+      robots: seoData.robots || 'index, follow',
+      openGraph: {
+        title: seoData.ogTitle || seoData.seotitle,
+        description: seoData.ogDescription || seoData.seodescription,
+        images: seoData.ogImage ? [{ url: seoData.ogImage }] : [],
+      },
+      twitter: {
+        title: seoData.twitterTitle || seoData.seotitle,
+        description: seoData.twitterDescription || seoData.seodescription,
+        images: seoData.twitterImage ? [seoData.twitterImage] : [],
+      },
+      other: {},
+    };
+
+    // Add keywords if present
+    if (seoData.metaKeywords && seoData.metaKeywords.length > 0) {
+      metadata.other.keywords = seoData.metaKeywords.join(', ');
+    }
+
+    // Add canonical if present
+    if (seoData.canonicalUrl) {
+      metadata.alternates = {
+        canonical: seoData.canonicalUrl,
+      };
+    }
+
+    // Add schema if present
+    if (seoData.schema) {
+      metadata.other['schema:ld+json'] = seoData.schema;
+    }
+
+    return metadata;
+  }
+
+  // Default metadata if no SEO data
+  return {
+    title: 'Default Title',
+    description: 'Default Description',
+  };
+}
+
 export default async function Home() {
   // Fetch SEO data on the server
   const seoData = await fetchSEOData('homepage');
