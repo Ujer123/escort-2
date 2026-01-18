@@ -1,3 +1,6 @@
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 // Fetch main dashboard data server-side
 async function fetchDashboardData() {
   try {

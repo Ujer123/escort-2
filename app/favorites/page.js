@@ -1,3 +1,6 @@
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
+
 // Fetch favorites data server-side
 async function fetchFavoritesData() {
   try {
