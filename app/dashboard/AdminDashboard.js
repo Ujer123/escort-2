@@ -49,9 +49,12 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('users');
+  const [seoSection, setSeoSection] = useState('homepage-top');
   const [seoContent, setSeoContent] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
+  const [layoutTitle, setLayoutTitle] = useState('');
+  const [layoutDescription, setLayoutDescription] = useState('');
   const [h1, setH1] = useState('');
   const [schema, setSchema] = useState('');
   const [metaKeywords, setMetaKeywords] = useState('');
@@ -170,44 +173,76 @@ export default function AdminDashboard() {
 
   const handleSeoSubmit = async () => {
     if (!isClient) return;
-    
+
     setSeoLoading(true);
     const token = localStorage.getItem('token');
-    
+
     try {
-      const response = await fetch('/api/seo', {
+      let apiEndpoint = '';
+      let requestBody = {};
+
+      // Route to appropriate API endpoint based on section
+      switch (seoSection) {
+        case 'homepage-top':
+          apiEndpoint = '/api/homepage-top';
+          requestBody = { h1, seodescription: seoDescription };
+          break;
+        case 'homepage-bottom':
+          apiEndpoint = '/api/homepage-bottom';
+          requestBody = { content: seoContent };
+          break;
+        case 'layout':
+          apiEndpoint = '/api/layout';
+          requestBody = { title: layoutTitle, description: layoutDescription };
+          break;
+        case 'facebook':
+          apiEndpoint = '/api/facebook';
+          requestBody = { ogTitle, ogDescription, ogImage };
+          break;
+        case 'twitter':
+          apiEndpoint = '/api/twitter';
+          requestBody = { twitterTitle, twitterDescription, twitterImage };
+          break;
+        case 'meta':
+          apiEndpoint = '/api/meta';
+          requestBody = {
+            seotitle: seoTitle,
+            seodescription: seoDescription,
+            metaKeywords: metaKeywords.split(',').map(k => k.trim()).filter(k => k),
+            canonicalUrl,
+            robots
+          };
+          break;
+        default:
+          alert('Unknown section selected');
+          return;
+      }
+
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          page: 'homepage',
-          seotitle: seoTitle,
-          seodescription: seoDescription,
-          h1,
-          content: seoContent,
-          metaKeywords: metaKeywords.split(',').map(k => k.trim()).filter(k => k),
-          canonicalUrl,
-          robots,
-          ogTitle,
-          ogDescription,
-          ogImage,
-          twitterTitle,
-          twitterDescription,
-          twitterImage,
-          schema: schema,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (response.ok) {
-        alert('SEO content saved successfully!');
+        const sectionName = seoSection === 'layout' ? 'Layout settings' :
+                           seoSection === 'homepage-top' ? 'Homepage Header' :
+                           seoSection === 'homepage-bottom' ? 'Homepage Footer' :
+                           seoSection === 'facebook' ? 'Facebook Settings' :
+                           seoSection === 'twitter' ? 'Twitter Settings' :
+                           seoSection === 'meta' ? 'Meta Tags' :
+                           `${seoSection.charAt(0).toUpperCase() + seoSection.slice(1).replace('-', ' ')}`;
+        alert(`${sectionName} saved successfully!`);
       } else {
-        alert('Failed to save SEO content');
+        const errorData = await response.json();
+        alert(`Failed to save: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error saving SEO:', error);
-      alert('Error saving SEO content');
+      console.error('Error saving content:', error);
+      alert('Error saving content');
     } finally {
       setSeoLoading(false);
     }
@@ -261,7 +296,7 @@ export default function AdminDashboard() {
         </div>
       </div> */}
 
-      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8 bg-[#1e2a3a]">
+      <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 py-4 sm:py-8 bg-[#191919]">
         {/* Tab Navigation */}
         <div className="bg-linear-to-br from-blue-900 via-gray-900 to-black backdrop-blur-sm border border-blue-500/20 rounded-none sm:rounded-2xl shadow-2xl mb-4 sm:mb-8">
           <div className="border-b border-blue-500/20">
@@ -432,148 +467,306 @@ export default function AdminDashboard() {
                   <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">SEO Management</h2>
                   <p className="text-green-300 text-sm sm:text-base">Optimize your website for search engines</p>
                 </div>
-                
+
+                {/* SEO Section Selector */}
+                <div className="mb-6 sm:mb-8">
+                  <label className="block text-sm font-medium text-green-300 mb-3 flex items-center">
+                    <span className="mr-2">📍</span>
+                    Select Content Section
+                  </label>
+                  <select
+                    value={seoSection}
+                    onChange={(e) => setSeoSection(e.target.value)}
+                    className="w-full max-w-md px-4 py-3 bg-black/20 border border-green-500/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                  >
+                    <option className="bg-black" value="homepage-top">🏠 Homepage Top</option>
+                    <option className="bg-black" value="homepage-bottom">🏠 Homepage Bottom</option>
+                    <option className="bg-black" value="layout">📄 Layout (Title & Description)</option>
+                    <option className="bg-black" value="facebook">� Facebook (Open Graph)</option>
+                    <option className="bg-black" value="twitter">� Twitter Cards</option>
+                    <option className="bg-black" value="meta">🔍 Meta Tags</option>
+                  </select>
+                </div>
+
                 <div className="bg-gradient-to-br from-green-800/20 to-teal-800/20 backdrop-blur-sm border border-green-500/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-xl">
-                  <div className="space-y-6 sm:space-y-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  {seoSection === 'layout' ? (
+                    <div className="space-y-6 sm:space-y-8">
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                          <span className="mr-2">🏷️</span>
-                          SEO Title
+                          <span className="mr-2">📄</span>
+                          Layout Title (app/layout.js)
                         </label>
                         <input
                           type="text"
-                          placeholder="Enter SEO title"
-                          value={seoTitle}
-                          onChange={(e) => setSeoTitle(e.target.value)}
+                          placeholder="Enter site title"
+                          value={layoutTitle}
+                          onChange={(e) => setLayoutTitle(e.target.value)}
                           className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
                         />
+                        <p className="text-xs text-gray-400 mt-1">This will update the title in your layout.js metadata</p>
                       </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                          <span className="mr-2">📝</span>
+                          Layout Description (app/layout.js)
+                        </label>
+                        <textarea
+                          placeholder="Enter site description"
+                          value={layoutDescription}
+                          onChange={(e) => setLayoutDescription(e.target.value)}
+                          rows={4}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">This will update the description in your layout.js metadata</p>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">💾</span>
+                              <span>Save Layout Settings</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : seoSection === 'homepage-top' ? (
+                    <div className="space-y-6 sm:space-y-8">
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
                           <span className="mr-2">🏷️</span>
-                          H1 Tag
+                          Homepage Header H1
                         </label>
                         <input
                           type="text"
-                          placeholder="Enter H1 tag"
+                          placeholder="Enter homepage header H1"
                           value={h1}
                           onChange={(e) => setH1(e.target.value)}
                           className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
                         />
+                        <p className="text-xs text-gray-400 mt-1">This appears in the purple header section at the top of the homepage</p>
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                        <span className="mr-2">📝</span>
-                        SEO Description
-                      </label>
-                      <textarea
-                        placeholder="Enter SEO description"
-                        value={seoDescription}
-                        onChange={(e) => setSeoDescription(e.target.value)}
-                        rows={4}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                          <span className="mr-2">🔑</span>
-                          Meta Keywords
+                          <span className="mr-2">📝</span>
+                          Homepage Header Description
                         </label>
-                        <input
-                          type="text"
-                          placeholder="keyword1, keyword2, keyword3"
-                          value={metaKeywords}
-                          onChange={(e) => setMetaKeywords(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                        <textarea
+                          placeholder="Enter homepage header description"
+                          value={seoDescription}
+                          onChange={(e) => setSeoDescription(e.target.value)}
+                          rows={4}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
                         />
+                        <p className="text-xs text-gray-400 mt-1">This appears below the H1 in the purple header section</p>
                       </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">💾</span>
+                              <span>Save Homepage Header</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : seoSection === 'homepage-bottom' ? (
+                    <div className="space-y-6 sm:space-y-8">
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                          <span className="mr-2">🔗</span>
-                          Canonical URL
+                          <span className="mr-2">✏️</span>
+                          Homepage Footer Content
                         </label>
-                        <input
-                          type="url"
-                          placeholder="https://example.com/"
-                          value={canonicalUrl}
-                          onChange={(e) => setCanonicalUrl(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
-                        />
+                        <div className="bg-black/20 border border-green-500/20 rounded-xl overflow-hidden">
+                          <style jsx global>{`
+                            .ck-editor__editable {
+                              color: white !important;
+                              background: rgba(0, 0, 0, 0.2) !important;
+                            }
+                            .ck-editor__editable p, .ck-editor__editable h1, .ck-editor__editable h2,
+                            .ck-editor__editable h3, .ck-editor__editable h4, .ck-editor__editable h5,
+                            .ck-editor__editable h6, .ck-editor__editable li, .ck-editor__editable span {
+                              color: white !important;
+                            }
+                            .ck-editor__editable a {
+                              color: #60a5fa !important;
+                            }
+                            .ck-editor__editable blockquote {
+                              border-left: 4px solid #22c55e;
+                              background: rgba(34, 197, 94, 0.1);
+                            }
+                            .ck-content {
+                              color: white !important;
+                            }
+                            .ck-content * {
+                              color: white !important;
+                            }
+                          `}</style>
+                          <EditorWrapper
+                            data={seoContent}
+                            onChange={(event, editor) => setSeoContent(editor.getData())}
+                            config={{
+                              toolbar: [
+                                'heading', '|',
+                                'bold', 'italic', 'link', '|',
+                                'bulletedList', 'numberedList', '|',
+                                'outdent', 'indent', '|',
+                                'blockQuote', 'insertTable', '|',
+                                'undo', 'redo'
+                              ],
+                              contentsCss: `
+                                body {
+                                  color: white !important;
+                                  background: rgba(0, 0, 0, 0.2) !important;
+                                }
+                                p, h1, h2, h3, h4, h5, h6, li, span {
+                                  color: white !important;
+                                }
+                                a {
+                                  color: #60a5fa !important;
+                                }
+                                blockquote {
+                                  border-left: 4px solid #22c55e;
+                                  background: rgba(34, 197, 94, 0.1);
+                                }
+                              `
+                            }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">This appears in the purple footer section at the bottom of the homepage</p>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">💾</span>
+                              <span>Save Homepage Footer</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
+                  ) : seoSection === 'facebook' ? (
+                    <div className="space-y-6 sm:space-y-8">
+                      <div className="mb-4">
+                        <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
+                          <span className="mr-2">📘</span>
+                          Facebook Open Graph Settings
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-6">Configure how your content appears when shared on Facebook</p>
+                      </div>
 
-                    <div>
-                      <label className="text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                        <span className="mr-2">🤖</span>
-                        Robots Meta
-                      </label>
-                      <select
-                        value={robots}
-                        onChange={(e) => setRobots(e.target.value)}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
-                      >
-                        <option className="bg-black" value="index, follow">index, follow</option>
-                        <option className="bg-black" value="noindex, follow">noindex, follow</option>
-                        <option className="bg-black" value="index, nofollow">index, nofollow</option>
-                        <option className="bg-black" value="noindex, nofollow">noindex, nofollow</option>
-                      </select>
-                    </div>
-
-                    <div className="border-t border-green-500/20 pt-6 sm:pt-8">
-                      <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
-                        <span className="mr-2">📘</span>
-                        Open Graph (Facebook)
-                      </h3>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         <div>
-                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Title</label>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Facebook Title</label>
                           <input
                             type="text"
-                            placeholder="Open Graph title"
+                            placeholder="Title for Facebook sharing"
                             value={ogTitle}
                             onChange={(e) => setOgTitle(e.target.value)}
                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Image URL</label>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Facebook Image URL</label>
                           <input
                             type="url"
-                            placeholder="https://example.com/image.jpg"
+                            placeholder="https://example.com/facebook-image.jpg"
                             value={ogImage}
                             onChange={(e) => setOgImage(e.target.value)}
                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
                           />
                         </div>
                       </div>
+
                       <div>
-                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Description</label>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Facebook Description</label>
                         <textarea
-                          placeholder="Open Graph description"
+                          placeholder="Description for Facebook sharing"
                           value={ogDescription}
                           onChange={(e) => setOgDescription(e.target.value)}
-                          rows={3}
+                          rows={4}
                           className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
                         />
                       </div>
-                    </div>
 
-                    <div className="border-t border-green-500/20 pt-6 sm:pt-8">
-                      <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
-                        <span className="mr-2">🐦</span>
-                        Twitter Cards
-                      </h3>
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">📘</span>
+                              <span>Save Facebook Settings</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : seoSection === 'twitter' ? (
+                    <div className="space-y-6 sm:space-y-8">
+                      <div className="mb-4">
+                        <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
+                          <span className="mr-2">🐦</span>
+                          Twitter Card Settings
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-6">Configure how your content appears when shared on Twitter</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         <div>
                           <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Title</label>
                           <input
                             type="text"
-                            placeholder="Twitter card title"
+                            placeholder="Title for Twitter sharing"
                             value={twitterTitle}
                             onChange={(e) => setTwitterTitle(e.target.value)}
                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
@@ -583,84 +776,383 @@ export default function AdminDashboard() {
                           <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Image URL</label>
                           <input
                             type="url"
-                            placeholder="https://example.com/image.jpg"
+                            placeholder="https://example.com/twitter-image.jpg"
                             value={twitterImage}
                             onChange={(e) => setTwitterImage(e.target.value)}
                             className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
                           />
                         </div>
                       </div>
+
                       <div>
                         <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Description</label>
                         <textarea
-                          placeholder="Twitter card description"
+                          placeholder="Description for Twitter sharing"
                           value={twitterDescription}
                           onChange={(e) => setTwitterDescription(e.target.value)}
-                          rows={3}
+                          rows={4}
                           className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 items-center">
-                        <span className="mr-2">✏️</span>
-                        Footer
-                      </label>
-                      <div className="bg-black/20 border border-green-500/20 rounded-xl overflow-hidden">
-                        <EditorWrapper
-                          data={seoContent}
-                          onChange={(event, editor) => setSeoContent(editor.getData())}
-                          config={{
-                            toolbar: [
-                              'heading', '|',
-                              'bold', 'italic', 'link', '|',
-                              'bulletedList', 'numberedList', '|',
-                              'outdent', 'indent', '|',
-                              'blockQuote', 'insertTable', '|',
-                              'undo', 'redo'
-                            ]
-                          }}
-                        />
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-medium rounded-xl shadow-lg hover:shadow-blue-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">🐦</span>
+                              <span>Save Twitter Settings</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
+                  ) : seoSection === 'meta' ? (
+                    <div className="space-y-6 sm:space-y-8">
+                      <div className="mb-4">
+                        <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
+                          <span className="mr-2">🔍</span>
+                          Meta Tags Settings
+                        </h3>
+                        <p className="text-xs text-gray-400 mb-6">Configure general meta tags for search engines</p>
+                      </div>
 
-                    <div>
-                      <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
-                        <span className="mr-2">📦</span>
-                        Schema (JSON-LD)
-                      </label>
-                      <textarea
-                        placeholder="Enter JSON-LD schema markup"
-                        value={schema}
-                        onChange={(e) => setSchema(e.target.value)}
-                        rows={6}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none font-mono text-xs sm:text-sm"
-                      />
-                    </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🏷️</span>
+                            SEO Title
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Page title for search engines"
+                            value={seoTitle}
+                            onChange={(e) => setSeoTitle(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🔗</span>
+                            Canonical URL
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="https://example.com/canonical"
+                            value={canonicalUrl}
+                            onChange={(e) => setCanonicalUrl(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                      </div>
 
-                    <div className="flex justify-end">
-                      <button
-                        onClick={handleSeoSubmit}
-                        disabled={seoLoading}
-                        className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
-                          seoLoading ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        {seoLoading ? (
-                          <>
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                            <span>Saving...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span className="text-base sm:text-lg">💾</span>
-                            <span>Save SEO Content</span>
-                          </>
-                        )}
-                      </button>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                          <span className="mr-2">📝</span>
+                          SEO Description
+                        </label>
+                        <textarea
+                          placeholder="Meta description for search engines"
+                          value={seoDescription}
+                          onChange={(e) => setSeoDescription(e.target.value)}
+                          rows={4}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🔑</span>
+                            Meta Keywords
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="keyword1, keyword2, keyword3"
+                            value={metaKeywords}
+                            onChange={(e) => setMetaKeywords(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🤖</span>
+                            Robots Meta
+                          </label>
+                          <select
+                            value={robots}
+                            onChange={(e) => setRobots(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          >
+                            <option className="bg-black" value="index, follow">index, follow</option>
+                            <option className="bg-black" value="noindex, follow">noindex, follow</option>
+                            <option className="bg-black" value="index, nofollow">index, nofollow</option>
+                            <option className="bg-black" value="noindex, nofollow">noindex, nofollow</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-medium rounded-xl shadow-lg hover:shadow-gray-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">🔍</span>
+                              <span>Save Meta Settings</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="space-y-6 sm:space-y-8">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🏷️</span>
+                            SEO Title
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Enter SEO title"
+                            value={seoTitle}
+                            onChange={(e) => setSeoTitle(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🏷️</span>
+                            H1 Tag
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Enter H1 tag"
+                            value={h1}
+                            onChange={(e) => setH1(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                          <span className="mr-2">📝</span>
+                          SEO Description
+                        </label>
+                        <textarea
+                          placeholder="Enter SEO description"
+                          value={seoDescription}
+                          onChange={(e) => setSeoDescription(e.target.value)}
+                          rows={4}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🔑</span>
+                            Meta Keywords
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="keyword1, keyword2, keyword3"
+                            value={metaKeywords}
+                            onChange={(e) => setMetaKeywords(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                            <span className="mr-2">🔗</span>
+                            Canonical URL
+                          </label>
+                          <input
+                            type="url"
+                            placeholder="https://example.com/"
+                            value={canonicalUrl}
+                            onChange={(e) => setCanonicalUrl(e.target.value)}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                          <span className="mr-2">🤖</span>
+                          Robots Meta
+                        </label>
+                        <select
+                          value={robots}
+                          onChange={(e) => setRobots(e.target.value)}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                        >
+                          <option className="bg-black" value="index, follow">index, follow</option>
+                          <option className="bg-black" value="noindex, follow">noindex, follow</option>
+                          <option className="bg-black" value="index, nofollow">index, nofollow</option>
+                          <option className="bg-black" value="noindex, nofollow">noindex, nofollow</option>
+                        </select>
+                      </div>
+
+                      <div className="border-t border-green-500/20 pt-6 sm:pt-8">
+                        <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
+                          <span className="mr-2">📘</span>
+                          Open Graph (Facebook)
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Title</label>
+                            <input
+                              type="text"
+                              placeholder="Open Graph title"
+                              value={ogTitle}
+                              onChange={(e) => setOgTitle(e.target.value)}
+                              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Image URL</label>
+                            <input
+                              type="url"
+                              placeholder="https://example.com/image.jpg"
+                              value={ogImage}
+                              onChange={(e) => setOgImage(e.target.value)}
+                              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">OG Description</label>
+                          <textarea
+                            placeholder="Open Graph description"
+                            value={ogDescription}
+                            onChange={(e) => setOgDescription(e.target.value)}
+                            rows={3}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="border-t border-green-500/20 pt-6 sm:pt-8">
+                        <h3 className="text-base sm:text-lg font-semibold text-green-300 mb-4 sm:mb-6 flex items-center">
+                          <span className="mr-2">🐦</span>
+                          Twitter Cards
+                        </h3>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Title</label>
+                            <input
+                              type="text"
+                              placeholder="Twitter card title"
+                              value={twitterTitle}
+                              onChange={(e) => setTwitterTitle(e.target.value)}
+                              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Image URL</label>
+                            <input
+                              type="url"
+                              placeholder="https://example.com/image.jpg"
+                              value={twitterImage}
+                              onChange={(e) => setTwitterImage(e.target.value)}
+                              className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 text-sm sm:text-base"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3">Twitter Description</label>
+                          <textarea
+                            placeholder="Twitter card description"
+                            value={twitterDescription}
+                            onChange={(e) => setTwitterDescription(e.target.value)}
+                            rows={3}
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none text-sm sm:text-base"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 items-center">
+                          <span className="mr-2">✏️</span>
+                          Content
+                        </label>
+                        <div className="bg-black/20 border border-green-500/20 rounded-xl overflow-hidden">
+                          <EditorWrapper
+                            data={seoContent}
+                            onChange={(event, editor) => setSeoContent(editor.getData())}
+                            config={{
+                              toolbar: [
+                                'heading', '|',
+                                'bold', 'italic', 'link', '|',
+                                'bulletedList', 'numberedList', '|',
+                                'outdent', 'indent', '|',
+                                'blockQuote', 'insertTable', '|',
+                                'undo', 'redo'
+                              ]
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs sm:text-sm font-medium text-green-300 mb-2 sm:mb-3 flex items-center">
+                          <span className="mr-2">📦</span>
+                          Schema (JSON-LD)
+                        </label>
+                        <textarea
+                          placeholder="Enter JSON-LD schema markup"
+                          value={schema}
+                          onChange={(e) => setSchema(e.target.value)}
+                          rows={6}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/20 border border-green-500/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 transition-all duration-200 resize-none font-mono text-xs sm:text-sm"
+                        />
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleSeoSubmit}
+                          disabled={seoLoading}
+                          className={`inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-medium rounded-xl shadow-lg hover:shadow-green-500/25 transition-all duration-200 space-x-2 text-sm sm:text-base ${
+                            seoLoading ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {seoLoading ? (
+                            <>
+                              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                              <span>Saving...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-base sm:text-lg">💾</span>
+                              <span>Save SEO Content</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

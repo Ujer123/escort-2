@@ -3,83 +3,112 @@ import HomeCard from "@/components/HomeCard";
 // Force dynamic rendering to ensure fresh data on every request
 export const dynamic = 'force-dynamic';
 
-async function fetchSEOData(page) {
+async function fetchHomepageTop() {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/seo?page=${page}`, {
-      cache: 'no-store', // Don't cache SEO data to ensure freshness
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/homepage-top`, {
+      cache: 'no-store',
     });
 
     if (!response.ok) {
-      console.warn('Failed to fetch SEO data:', response.status);
-      return null;
+      console.warn('Failed to fetch homepage top data:', response.status);
+      return { h1: '', seodescription: '' };
     }
 
     return await response.json();
   } catch (error) {
-    console.warn('Error fetching SEO data:', error);
-    return null;
+    console.warn('Error fetching homepage top data:', error);
+    return { h1: '', seodescription: '' };
+  }
+}
+
+async function fetchHomepageBottom() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/homepage-bottom`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to fetch homepage bottom data:', response.status);
+      return { content: '' };
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn('Error fetching homepage bottom data:', error);
+    return { content: '' };
+  }
+}
+
+async function fetchMetaData() {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/meta`, {
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      console.warn('Failed to fetch meta data:', response.status);
+      return {
+        seotitle: '',
+        seodescription: '',
+        metaKeywords: [],
+        canonicalUrl: '',
+        robots: 'index, follow'
+      };
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn('Error fetching meta data:', error);
+    return {
+      seotitle: '',
+      seodescription: '',
+      metaKeywords: [],
+      canonicalUrl: '',
+      robots: 'index, follow'
+    };
   }
 }
 
 export async function generateMetadata() {
-  const seoData = await fetchSEOData('homepage');
+  // Fetch meta data for page metadata
+  const metaData = await fetchMetaData();
 
-  if (seoData) {
-    const metadata = {
-      title: seoData.seotitle || 'Default Title',
-      description: seoData.seodescription || 'Default Description',
-      robots: seoData.robots || 'index, follow',
-      openGraph: {
-        title: seoData.ogTitle || seoData.seotitle,
-        description: seoData.ogDescription || seoData.seodescription,
-        images: seoData.ogImage ? [{ url: seoData.ogImage }] : [],
-      },
-      twitter: {
-        title: seoData.twitterTitle || seoData.seotitle,
-        description: seoData.twitterDescription || seoData.seodescription,
-        images: seoData.twitterImage ? [seoData.twitterImage] : [],
-      },
-      other: {},
-    };
+  const metadata = {
+    title: metaData.seotitle || 'Default Title',
+    description: metaData.seodescription || 'Default Description',
+    robots: metaData.robots || 'index, follow',
+    other: {},
+  };
 
-    // Add keywords if present
-    if (seoData.metaKeywords && seoData.metaKeywords.length > 0) {
-      metadata.other.keywords = seoData.metaKeywords.join(', ');
-    }
-
-    // Add canonical if present
-    if (seoData.canonicalUrl) {
-      metadata.alternates = {
-        canonical: seoData.canonicalUrl,
-      };
-    }
-
-    // Add schema if present
-    if (seoData.schema) {
-      metadata.other['schema:ld+json'] = seoData.schema;
-    }
-
-    return metadata;
+  // Add keywords if present
+  if (metaData.metaKeywords && metaData.metaKeywords.length > 0) {
+    metadata.other.keywords = metaData.metaKeywords.join(', ');
   }
 
-  // Default metadata if no SEO data
-  return {
-    title: 'Default Title',
-    description: 'Default Description',
-  };
+  // Add canonical if present
+  if (metaData.canonicalUrl) {
+    metadata.alternates = {
+      canonical: metaData.canonicalUrl,
+    };
+  }
+
+  return metadata;
 }
 
 export default async function Home() {
-  // Fetch SEO data on the server
-  const seoData = await fetchSEOData('homepage');
+  // Fetch SEO data from separate endpoints
+  const [homepageTop, homepageBottom] = await Promise.all([
+    fetchHomepageTop(),
+    fetchHomepageBottom()
+  ]);
 
   return (
     <>
       {/* Render SEO header */}
-      {seoData ? (
+      {homepageTop && homepageTop.h1 ? (
         <div className="px-8 py-10 bg-[#33182c] md:mx-10 md:mt-10 md:rounded-xl">
-          <h1 className='text-lg font-bold'>{seoData.h1}</h1>
-          <p>{seoData.description}</p>
+          <h1 className='text-lg font-bold'>{homepageTop.h1}</h1>
+          <p>{homepageTop.seodescription}</p>
         </div>
       ) : null}
 
@@ -87,8 +116,8 @@ export default async function Home() {
       <HomeCard />
 
       {/* Render SEO footer */}
-      {seoData ? (
-        <div className='px-8 py-10 bg-[#33182c] md:m-10 md:rounded-xl' dangerouslySetInnerHTML={{ __html: seoData.content }} />
+      {homepageBottom && homepageBottom.content ? (
+        <div className='px-8 py-10 bg-[#33182c] md:m-10 md:rounded-xl' dangerouslySetInnerHTML={{ __html: homepageBottom.content }} />
       ) : null}
     </>
   );

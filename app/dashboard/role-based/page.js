@@ -40,7 +40,7 @@ export default function RoleBasedDashboard() {
     };
 
     checkAuth();
-  }, [router]);
+  }, []); // Remove router dependency to prevent re-renders
 
   if (loading) {
     return <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center text-center">Loading...</div>;
