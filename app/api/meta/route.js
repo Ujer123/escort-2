@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    const meta = await Meta.findOne();
+    const meta = await Meta.findOne().lean();
     if (!meta) {
       return new Response(JSON.stringify({
         seotitle: '',

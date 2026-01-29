@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    const homepageTop = await HomepageTop.findOne();
+    const homepageTop = await HomepageTop.findOne().lean();
     if (!homepageTop) {
       return new Response(JSON.stringify({
         h1: '',
@@ -70,7 +70,7 @@ export async function POST(req) {
     let requestData;
     try {
       requestData = await req.json();
-      console.log("Request data received:", requestData);
+      console.log("Request data received:", Object.keys(requestData));
     } catch (jsonError) {
       console.log("Failed to parse JSON:", jsonError.message);
       return new Response(JSON.stringify({ error: "Invalid JSON data" }), {

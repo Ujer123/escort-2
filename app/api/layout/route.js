@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    const layout = await Layout.findOne();
+    const layout = await Layout.findOne().lean();
     if (!layout) {
       return new Response(JSON.stringify({
         title: '',

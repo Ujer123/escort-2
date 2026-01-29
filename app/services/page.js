@@ -1,5 +1,8 @@
 import ServiceCard from "@/components/ServiceCard";
 
+// Force dynamic rendering to ensure fresh services data on every request
+export const dynamic = 'force-dynamic';
+
 async function getServices() {
   const res = await fetch('/api/services', {
     cache: "no-store",

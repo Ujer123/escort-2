@@ -1,7 +1,8 @@
 // Fetch profiles server-side with dynamic caching
 async function fetchProfilesData(page = 1, limit = 20) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // For server-side rendering, always use localhost
+    const baseUrl = typeof window === 'undefined' ? 'http://localhost:3000' : (process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000');
     const response = await fetch(`${baseUrl}/api/services?page=${page}&limit=${limit}`, {
       cache: 'no-store', // Don't cache server-side to ensure fresh data
       headers: {
@@ -10,7 +11,8 @@ async function fetchProfilesData(page = 1, limit = 20) {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch profiles: ${response.status}`);
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch profiles: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

@@ -6,7 +6,7 @@ export async function GET(req) {
   try {
     await connectDB();
 
-    const homepageBottom = await HomepageBottom.findOne();
+    const homepageBottom = await HomepageBottom.findOne().lean();
     if (!homepageBottom) {
       return new Response(JSON.stringify({
         content: ''
