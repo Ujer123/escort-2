@@ -8,7 +8,7 @@ export default function ProfileCard({ data, isFavorite, onFavoriteToggle }) {
   return (
     <>
     <div className="relative">
-      <Link href={`/profile/${slugify(data.name)}`} className="block">
+      <Link href={`/profile/${data.slug || slugify(data.name)}`} className="block">
         <div className="relative w-full aspect-3/4">
           <Image
             src={data.image}

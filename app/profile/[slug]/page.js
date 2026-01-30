@@ -1,35 +1,32 @@
-// Fetch profile data server-side
-async function fetchProfileData(slug) {
+import { connectDB } from "@/lib/db";
+import Service from "@/lib/models/Service";
+import ClientProfilePage from './ClientProfilePage';
+
+async function getProfileData(slug) {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const response = await fetch(`${baseUrl}/api/profiles/${slug}`, {
-      cache: 'no-store',
-    });
+    await connectDB();
+    
+    // Query the Service model directly instead of calling an API
+    const profile = await Service.findOne({ slug: slug }).lean();
 
-    if (response.status === 404) {
-      return { profile: null, notFound: true, error: null };
+    if (!profile) {
+      return { profile: null, notFound: true };
     }
 
-    if (!response.ok) {
-      return { profile: null, notFound: false, error: `Failed to fetch profile: ${response.status}` };
-    }
-
-    const profile = await response.json();
-    return { profile, notFound: false, error: null };
+    // Serialize the data (convert ObjectIds and Dates to strings) for the client component
+    const serializedProfile = JSON.parse(JSON.stringify(profile));
+    return { profile: serializedProfile, notFound: false };
   } catch (error) {
-    console.error('Error fetching profile server-side:', error);
-    return { profile: null, notFound: false, error: error?.message || 'Unknown error' };
+    console.error('Error fetching profile:', error);
+    return { profile: null, notFound: false, error: error.message };
   }
 }
-
-import ClientProfilePage from './ClientProfilePage';
 
 export default async function ProfilePage({ params }) {
   const { slug } = await params;
 
   // Fetch profile data on the server
-  const result = await fetchProfileData(slug);
-  console.log('Fetched profile data for slug', slug, result);
+  const result = await getProfileData(slug);
 
   if (result.notFound) {
     return (
