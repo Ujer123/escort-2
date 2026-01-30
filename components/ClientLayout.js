@@ -9,12 +9,13 @@ export default function ClientLayout({ children }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setIsClient(true);
   }, []);
 
   return (
     <Provider store={store}>
-      {isClient ? (
+      {isClient && persistor ? (
         <PersistGate loading={null} persistor={persistor}>
           {children}
         </PersistGate>
